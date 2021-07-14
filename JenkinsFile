@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+
+    stages {
+        stage ('Clean workspace') {
+          steps {
+            cleanWs()
+          }
+        }
+        stage ('git') {
+          steps {
+            git 'https://github.com/Akash0511/ConsoleCoreApp.git'
+          }
+        }
+		stage('SonarQube Analysis') {
+		    environment{
+		        scannerHome = tool 'sonarscanner'
+		    }
+			steps{
+				withSonarQubeEnv('sonarserver') {
+				  bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"dummy\""
+				  bat "dotnet build"
+				  bat "dotnet test"
+				  bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll end"
+				}
+			}
+		}
+    }
+}
